@@ -6,7 +6,7 @@
    [cljs.test :refer-macros [is testing async]] 
    )
   (:require-macros
-   [devcards.core :as dc :refer [defcard deftest defcard-om-next]]))
+   [devcards.core :as dc :refer [defcard deftest defcard-om-next defcard-doc]]))
 
 (enable-console-print!)
 
@@ -130,5 +130,74 @@
     )
   (testing "Getting component state"
     (let [c (om/class->any item-reconciler-merge ItemList)
+          props (om/props c)]
+      (is (= 2 (count (:items props)))))))
+
+(defn custom-merge-tree
+  [a b]
+  (if (map? a)
+    (merge-with #(if (map? %1)
+                   (merge %1 %2)
+                   %2) a b)
+    b))
+
+(defonce item-reconciler-merge-fixed
+  (om/reconciler {:state {:items [{:db/id 1
+                                   :item/name "item1"
+                                   :item/description "A nice item"}
+                                  {:db/id 2
+                                   :item/name "item2"
+                                   :item/description "Another nice item"}]}
+                  :normalize true
+                  :id-key :db/id
+                  :merge-tree custom-merge-tree
+                  :parser (om/parser {:read b/basic-reader})}))
+
+(defcard-om-next item-list-card
+  ItemList
+  item-reconciler-merge-fixed)
+
+
+(defcard-doc
+  "Same test again, this time with a reconciler that passes a custom :merge-tree that looks like:"
+
+  (dc/mkdn-pprint-source custom-merge-tree)
+
+  )
+
+(dc/deftest merge-data-test-fixed
+
+  (testing "Merging Data"
+    (testing "merging in state (same db/ids, different list)"
+      (let [next-state {:items2 [{:db/id 1
+                                  :item/name "item1"
+                                  :item/description "A nice item"}
+                                 {:db/id 2
+                                  :item/name "item2"
+                                  :item/description "Another nice item"}
+                                 {:db/id 3
+                                  :item/name "item3"
+                                  :item/description "New item"}]}
+            st (om/merge! item-reconciler-merge-fixed next-state)]
+        (is (= "item1" (get-in st [:db/id 1 :item/name])))
+        (is (= "item3" (get-in st [:db/id 3 :item/name])))))
+    (testing "merging in more state state (different db/ids, different list)"
+      (let [next-state {:items3 {:items [{:db/id 5
+                                          :item/name "item5"
+                                          :item/description "A nice item"}
+                                         {:db/id 4
+                                          :item/name "item4"
+                                          :item/description "Another nice item"}]}}
+            st (om/merge! item-reconciler-merge-fixed next-state)]
+        (is (= "item1" (get-in st [:db/id 1 :item/name])))
+        (is (= "item3" (get-in st [:db/id 3 :item/name])))
+        (is (= "item4" (get-in st [:db/id 4 :item/name])))
+        (testing "The prior refs are still in the item lists, and in the :db/id table"
+          (is (= [[:db/id 1] [:db/id 2]] (get-in st [:items])))
+          (is (= "item1" (get-in st [:db/id 1 :item/name]))))))
+    
+    )
+  (testing "Getting component state"
+    (let [c (om/class->any item-reconciler-merge-fixed ItemList)
           props (om/props c)]
       (is (= 2 (count (:items props)))))))
