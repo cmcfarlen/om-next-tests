@@ -1,6 +1,7 @@
 (ns om-next-tests.basic-parser
   (:require
    [om.next :as om]
+   [om.util :as util]
    [cljs.pprint :refer [pprint]]))
 
 (defn tables
@@ -69,7 +70,7 @@
      #_(println "missing key: " dispatch-key)
      (pprint ast)
      (pprint (om/ast->query (assoc ast :key :requests)))
-     (let [ast' (cond-> ast (om/ident? (:key ast)) (assoc :key (first (:key ast))))]
+     (let [ast' (cond-> ast (util/ident? (:key ast)) (assoc :key (first (:key ast))))]
        (assoc ast' :query-root parent-elided? :query (mapv om/ast->query (:children ast'))))
      )))
 
