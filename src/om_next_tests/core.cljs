@@ -5,6 +5,7 @@
    [om-next-tests.merge]
    [om-next-tests.tree-links]
    [om-next-tests.parser]
+   [om-next-tests.create-novelty]
    [devcards.core :as dc])
   (:require-macros
    [devcards.core :as dc :refer [defcard deftest]]))

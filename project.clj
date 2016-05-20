@@ -16,7 +16,7 @@
                  #_[cljsjs/react-dom "0.14.3-1"]
                  #_[cljsjs/react-dom-server "0.14.3-0"]
 
-                 [org.omcljs/om "1.0.0-alpha31"]]
+                 [org.omcljs/om "1.0.0-alpha35"]]
   
   :plugins [[lein-figwheel "0.5.0-6"]
             [lein-cljsbuild "1.1.2" :exclusions [org.clojure/clojure]]]
