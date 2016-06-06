@@ -6,6 +6,7 @@
    [om-next-tests.tree-links]
    [om-next-tests.parser]
    [om-next-tests.create-novelty]
+   [om-next-tests.recursive-queries]
    [devcards.core :as dc])
   (:require-macros
    [devcards.core :as dc :refer [defcard deftest]]))
